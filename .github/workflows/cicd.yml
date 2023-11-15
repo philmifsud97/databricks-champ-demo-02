@@ -35,6 +35,9 @@ jobs:
     - name: Install libraries
       run: |
         pip install --upgrade pip nutter poetry
+        curl -sSL https://install.python-poetry.org | python -
+        export PATH=$PATH:$HOME/.poetry/bin
+        poetry install --no-root
     - name: Update databricks repo
       run: |
         databricks repos update --path $REPO_DIRECTORY --branch "${{github.ref_name}}"
