@@ -38,8 +38,12 @@ jobs:
     - name: Update databricks repo
       run: |
         databricks repos update --path $REPO_DIRECTORY --branch "${{github.ref_name}}"
-      
-    - name: Run Tests
+    
+    - name: Run Local Tests
+      run: |
+        poetry run pytest tests/unit-local --junit-xml=test-local.xml --cov
+
+    - name: Run Notebook Tests
       run: |
         nutter run "$REPO_DIRECTORY/tests/unit-notebooks/" --cluster_id $CLUSTER_ID --recursive --junit_report --timeout 500
 
