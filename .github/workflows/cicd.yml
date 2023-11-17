@@ -160,8 +160,8 @@ jobs:
           sleep 15
         done
         DLT_FINISH=$SECONDS
-        DLT_ERRORS=$(( "$DLT_RESULT" = "FAILED" ? 1 : 0 ))
-        DLT_SKIPPED=$(( "$DLT_RESULT" = "CANCELED" ? 1 : 0 ))
+        DLT_ERRORS=$(( "$DLT_STATUS" = "FAILED" ? 1 : 0 ))
+        DLT_SKIPPED=$(( "$DLT_STATUS" = "CANCELED" ? 1 : 0 ))
         echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"DLT Integration test\" tests=\"1\" skipped=\"$DLT_SKIPPED\" errors=\"$DLT_ERRORS\" failures=\"$DLT_ERRORS\" time=\"$((DLT_FINISH-DLT_START))\" timestamp=\"${DLT_START_ISO}\">" > test-dlt.xml
         echo "<testcase classname=\"DLTIntegration\" name=\"${{ env.DLT_PIPELINE_NAME }}\" time=\"$((DLT_FINISH-DLT_START))\">" >> test-dlt.xml
         if [ "$DLT_STATUS" = "FAILED" ]; then
@@ -170,7 +170,7 @@ jobs:
           echo '<skipped />' >> test-dlt.xml
         fi
         echo '</testcase></testsuite></testsuites>' >> test-dlt.xml
-        if [ "$DLT_STATUS" != "SUCCESS" ]; then
+        if [ "$DLT_STATUS" != "COMPLETED" ]; then
           exit 1
         fi
 
