@@ -143,12 +143,6 @@ jobs:
           exit 1
         fi
 
-    - name: Publish Test Report
-      uses: mikepenz/action-junit-report@v3
-      if: success() || failure() # always run even if the previous step fails
-      with:
-        report_paths: '**/test-*.xml'
-
     - name: Run Integration Test
       run: |
         databricks -v
@@ -157,8 +151,7 @@ jobs:
         JOB_ID=$(databricks pipelines start-update ${{ env.DLT_PIPELINE_ID }} | jq -r .update_id)
         sleep 15
         while true; do
-          DLT_STATUS=$(databricks pipelines get-update cccbee24-a93b-4934-b588-751e1eee0981 cb9df422-84ff-4169-b784-04aeb6b41aa5 | jq -r .update.state)
-          DLT_STATUS=$(databricks jobs get-run $JOB_ID |jq -r .state.life_cycle_state)
+          DLT_STATUS=$(databricks pipelines get-update ${{ env.DLT_PIPELINE_ID }} $JOB_ID | jq -r .update.state)
           if [ "$DLT_STATUS" = "COMPLETED" -o "$DLT_STATUS" = "FAILED" ]; then
             echo "Exiting loop with status '$DLT_STATUS'"
             break
@@ -185,7 +178,7 @@ jobs:
       uses: mikepenz/action-junit-report@v3
       if: success() || failure() # always run even if the previous step fails
       with:
-        report_paths: '**/test-*.xml' 
+        report_paths: '**/test-*.xml'
         
   DeployProduction:
     environment: prod
