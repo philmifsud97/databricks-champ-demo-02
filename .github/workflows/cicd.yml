@@ -154,13 +154,13 @@ jobs:
         databricks -v
         DLT_START=$SECONDS
         DLT_START_ISO=$(date --iso-8601=seconds)
-        JOB_ID=$(databricks jobs run-now ${{ env.DLT_PIPELINE_ID }} --no-wait | jq .run_id)
+        JOB_ID=$(databricks pipelines start-update ${{ env.DLT_PIPELINE_ID }} | jq -r .update_id)
         sleep 15
         while true; do
+          DLT_STATUS=$(databricks pipelines get-update cccbee24-a93b-4934-b588-751e1eee0981 cb9df422-84ff-4169-b784-04aeb6b41aa5 | jq -r .update.state)
           DLT_STATUS=$(databricks jobs get-run $JOB_ID |jq -r .state.life_cycle_state)
-          DLT_RESULT=$(databricks jobs get-run $JOB_ID |jq -r .state.result_state)
-          if [ "$DLT_STATUS" = "CANCELED" -o "$DLT_STATUS" = "SKIPPED" -o "$DLT_STATUS" = "FAILED" -o "$DLT_STATUS" = "TERMINATED" ]; then
-            echo "Exiting loop with status '$DLT_STATUS' with results '$DLT_RESULT'"
+          if [ "$DLT_STATUS" = "COMPLETED" -o "$DLT_STATUS" = "FAILED" ]; then
+            echo "Exiting loop with status '$DLT_STATUS'"
             break
           fi
           echo "DLT pipeline status is '$DLT_STATUS'. Waiting..."
@@ -171,13 +171,13 @@ jobs:
         DLT_SKIPPED=$(( "$DLT_RESULT" = "CANCELED" ? 1 : 0 ))
         echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"DLT Integration test\" tests=\"1\" skipped=\"$DLT_SKIPPED\" errors=\"$DLT_ERRORS\" failures=\"$DLT_ERRORS\" time=\"$((DLT_FINISH-DLT_START))\" timestamp=\"${DLT_START_ISO}\">" > test-dlt.xml
         echo "<testcase classname=\"DLTIntegration\" name=\"${{ env.DLT_PIPELINE_NAME }}\" time=\"$((DLT_FINISH-DLT_START))\">" >> test-dlt.xml
-        if [ "$DLT_RESULT" = "FAILED" ]; then
+        if [ "$DLT_STATUS" = "FAILED" ]; then
           echo "<failure message=\"DLT test failure\">Pipeline update with ID ${JOB_ID} has failed</failure>" >> test-dlt.xml
-        elif [ "$DLT_RESULT" = "SKIPPED" ]; then
+        elif [ "$DLT_STATUS" = "SKIPPED" ]; then
           echo '<skipped />' >> test-dlt.xml
         fi
         echo '</testcase></testsuite></testsuites>' >> test-dlt.xml
-        if [ "$DLT_RESULT" != "SUCCESS" ]; then
+        if [ "$DLT_STATUS" != "SUCCESS" ]; then
           exit 1
         fi
 
