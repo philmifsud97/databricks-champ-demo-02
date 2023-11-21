@@ -1,14 +1,8 @@
-terraform {
-  required_providers {
-    databricks = {
-      source = "databricks/databricks"
-    }
-  }
-}
 
 variable "main_pipeline_name" {
   type        = string
   description = "Name of the main DLT pipeline"
+  default = "Demo 02 Integration Test TF"
 }
 
 variable "main_pipeline_repo_path" {
