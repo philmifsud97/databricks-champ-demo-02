@@ -44,3 +44,7 @@ def clickstream_filtered():
   # use imported function
   new_cols = ch.columns_except(df, ['prev_id', 'prev_title'])
   return df.select(*new_cols)
+
+# COMMAND ----------
+
+#tst
